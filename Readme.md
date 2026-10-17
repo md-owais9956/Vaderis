@@ -26,15 +26,11 @@ Vaderis aims to implement a lightweight, Redis-inspired database from scratch. T
 ### Core
 
 - [x] TCP server
-<<<<<<< HEAD
-- [ ] TCP client
-=======
-- [ ] Dedicated TCP client
->>>>>>> a7e0522 (Update name to Vaderis)
 - [x] Client connection handling
 - [x] Command parser
 - [x] Command execution engine
 - [x] In-memory key-value store
+- [ ] Dedicated TCP client
 
 ### Supported Commands
 
@@ -113,12 +109,12 @@ Vaderis/
 │   └── server/
 │       └── tcp_server.cpp
 ├── test_client.py
-├── redis-server.exe
+├── vaderis-server.exe
 ├── README.md
 └── LICENSE
 ```
 
-The executable and directory names should be updated to match the names you choose in your actual repository.
+The executable name shown above is the intended name. Update your build configuration to generate `vaderis-server.exe` if your current executable is still named `redis-server.exe`.
 
 ## Development Roadmap
 
@@ -151,38 +147,21 @@ Building a Redis-inspired database from scratch is an opportunity to explore the
 
 | Feature | Status |
 |---|---|
-<<<<<<< HEAD
-| Project Setup | ✅ |
-| TCP Server | ✅ |
-| Client | ⬜ |
-| Protocol Parser | ✅ |
-| `PING` | ✅ |
-| `SET` | ✅ |
-| `GET` | ✅ |
-| `DEL` | ✅ |
-| Expiration | ⬜ |
-| Lists | ⬜ |
-| Sets | ⬜ |
-| Hashes | ⬜ |
-| Persistence | ⬜ |
-| Concurrency | ⬜ |
-| Pub/Sub | ⬜ |
-| Benchmarking | ⬜ |
-=======
 | Project setup | Completed |
 | TCP server | Completed |
+| Client connection handling | Completed |
 | RESP command parsing | Completed |
 | Command execution | Completed |
 | In-memory key-value store | Completed |
 | `PING`, `SET`, `GET`, `DEL` | Completed |
 | `EXISTS`, `KEYS` | Completed |
+| Dedicated TCP client | Planned |
 | Key expiration and TTL | Planned |
 | Lists, sets, and hashes | Planned |
 | Persistence | Planned |
 | Concurrent clients | Planned |
 | Pub/Sub | Planned |
 | Benchmarking | Planned |
->>>>>>> a7e0522 (Update name to Vaderis)
 
 ## Disclaimer
 
@@ -196,7 +175,6 @@ You are free to use, copy, modify, merge, publish, distribute, sublicense, and s
 
 ## Future Ideas
 
-<<<<<<< HEAD
 Some features I may explore after the core implementation:
 
 - Event-driven architecture
@@ -209,11 +187,3 @@ Some features I may explore after the core implementation:
 - Cluster communication
 - Fault tolerance
 - Monitoring and metrics
-=======
-- Implement more Redis-inspired commands.
-- Add key expiration and TTL.
-- Introduce persistent storage.
-- Improve client handling and concurrency.
-- Build a dedicated command-line client.
-- Benchmark Vaderis against other in-memory data stores.
->>>>>>> a7e0522 (Update name to Vaderis)
