@@ -171,8 +171,6 @@ Vaderis is an educational project inspired by Redis. It is independently develop
 
 This project is licensed under the [MIT License](LICENSE).
 
-You are free to use, copy, modify, merge, publish, distribute, sublicense, and sell copies of this software, subject to the terms and conditions of the MIT License.
-
 ## Future Ideas
 
 Some features I may explore after the core implementation:
