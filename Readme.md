@@ -1,43 +1,38 @@
-# Redis From Scratch
+# Vaderis
 
-A Redis-inspired in-memory key-value database built from scratch to understand how systems like Redis work internally.
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-This project is focused on learning and implementing the core concepts behind an in-memory database, including networking, command parsing, data structures, persistence, concurrency, and client-server communication.
+**Vaderis** is a Redis-inspired, in-memory key-value database built from scratch in C++ to explore database internals, TCP networking, protocol parsing, and data structures.
 
-> **Status:** Work in Progress
+> Vaderis is an independent educational project inspired by Redis. It is not affiliated with or endorsed by Redis.
+
+**Status:** Work in Progress
 
 ## Overview
 
-Redis is a high-performance in-memory data store commonly used as a database, cache, message broker, and more.
-
-Instead of simply using Redis, this project aims to understand what happens under the hood by implementing a simplified version from scratch.
-
-The goal is not to recreate every Redis feature, but to build the fundamental components step by step.
+Vaderis aims to implement a lightweight, Redis-inspired database from scratch. The project explores how an in-memory database works internally, including TCP networking, the Redis Serialization Protocol (RESP), command processing, data storage, and persistence.
 
 ## Goals
 
-- Understand how an in-memory database works
-- Build a TCP client-server architecture
-- Implement a Redis-like command protocol
-- Implement core data structures
-- Handle concurrent client connections
-- Explore persistence mechanisms
-- Understand request parsing and command execution
-- Learn how high-performance systems are designed
-- Gradually add more advanced database features
+- Understand TCP networking and client-server communication.
+- Implement RESP protocol parsing and responses.
+- Build a command execution engine.
+- Implement an in-memory key-value store.
+- Explore data structures and persistence mechanisms.
+- Learn how databases handle concurrent clients and performance.
 
-## Planned Features
+## Features and Roadmap
 
 ### Core
 
 - [x] TCP server
-- [ ] TCP client
 - [x] Client connection handling
 - [x] Command parser
 - [x] Command execution engine
 - [x] In-memory key-value store
+- [ ] Dedicated TCP client
 
-### Basic Commands
+### Supported Commands
 
 - [x] `PING`
 - [x] `SET`
@@ -45,249 +40,136 @@ The goal is not to recreate every Redis feature, but to build the fundamental co
 - [x] `DEL`
 - [x] `EXISTS`
 - [x] `KEYS`
-- [ ] `EXPIRE`
-- [ ] `TTL`
+- [x] `EXPIRE`
+- [x] `TTL`
 
 ### Data Structures
 
-- [ ] Strings
 - [ ] Lists
 - [ ] Sets
 - [ ] Hashes
-- [ ] Sorted Sets
+- [ ] Sorted sets
 
 ### Persistence
 
 - [ ] Snapshot-based persistence
-- [ ] Append-only log
-- [ ] Database recovery
-- [ ] Data serialization
+- [ ] Append-only file (AOF)
 
 ### Advanced Features
 
-- [ ] Multiple clients
-- [ ] Concurrent request handling
-- [ ] Transactions
+- [ ] Multiple-client concurrency
 - [ ] Pub/Sub
-- [ ] Blocking operations
-- [ ] Authentication
-- [ ] Configuration system
-- [ ] Graceful shutdown
+- [ ] Transactions
 
 ### Performance
 
 - [ ] Benchmarking
-- [ ] Memory usage analysis
-- [ ] Concurrent client benchmarks
-- [ ] Command latency measurements
-- [ ] Profiling and optimization
+- [ ] Performance optimization
 
 ## Architecture
 
-The project will follow a simple client-server architecture:
+Vaderis follows a client-server architecture:
 
-```text
-                    ┌─────────────────┐
-                    │      Client     │
-                    └────────┬────────┘
-                             │
-                             │ TCP
-                             ▼
-                    ┌─────────────────┐
-                    │   TCP Server    │
-                    └────────┬────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-                    │ Command Parser  │
-                    └────────┬────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-                    │ Command Engine  │
-                    └────────┬────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-                    │  Data Store     │
-                    │                 │
-                    │  Key → Value    │
-                    └────────┬────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-                    │   Persistence   │
-                    └─────────────────┘
-```
+1. A client connects to the server over TCP.
+2. The server receives commands encoded using RESP.
+3. The command parser extracts the command and its arguments.
+4. The command execution engine processes the request.
+5. The in-memory database stores or retrieves the requested data.
+6. The server sends the response back to the client.
 
 ## Example
 
-Once the basic server is implemented, the interaction will look something like:
+Example commands supported by Vaderis:
 
 ```text
+PING
++PONG
+
 SET name Owais
 +OK
 
 GET name
-"Owais"
+$5
+Owais
+
+EXISTS name
+:1
 
 DEL name
 :1
-
-GET name
-(nil)
 ```
+
+These examples illustrate the expected results. Exact response formatting may vary depending on the client.
 
 ## Project Structure
 
-The structure may evolve as the project grows.
-
 ```text
-redis-from-scratch/
-│
+Vaderis/
 ├── src/
-│   ├── server/
-│   ├── client/
-│   ├── parser/
-│   ├── commands/
-│   ├── storage/
-│   ├── data_structures/
-│   └── persistence/
-│
-├── tests/
-│
-├── docs/
-│
-├── benchmarks/
-│
-├── examples/
-│
+│   └── server/
+│       └── tcp_server.cpp
+├── test_client.py
+├── vaderis-server.exe
 ├── README.md
 └── LICENSE
 ```
 
+The executable name shown above is the intended name. Update your build configuration to generate `vaderis-server.exe` if your current executable is still named `redis-server.exe`.
+
 ## Development Roadmap
 
-The project will be developed incrementally.
-
-### Phase 1 — TCP Server
-
-Build a basic TCP server capable of accepting client connections.
-
-### Phase 2 — Command Protocol
-
-Implement request parsing and responses.
-
-Initial commands:
-
-```text
-PING
-SET
-GET
-DEL
-```
-
-### Phase 3 — In-Memory Storage
-
-Implement the internal key-value store.
-
-```text
-Key        Value
--------------------
-name       Owais
-language   C++
-project    Redis
-```
-
-### Phase 4 — Data Structures
-
-Add support for Redis-like collections:
-
-```text
-String
-List
-Set
-Hash
-Sorted Set
-```
-
-### Phase 5 — Expiration
-
-Add key expiration and TTL support.
-
-```text
-SET session abc123 EX 60
-TTL session
-```
-
-### Phase 6 — Persistence
-
-Implement mechanisms for saving data to disk and recovering it after a restart.
-
-### Phase 7 — Concurrency
-
-Improve the server to handle multiple clients efficiently.
-
-### Phase 8 — Optimization
-
-Benchmark the implementation and identify performance bottlenecks.
+1. Build the TCP server.
+2. Implement RESP command parsing.
+3. Add basic Redis-inspired commands.
+4. Expand the supported data structures.
+5. Implement key expiration and TTL.
+6. Add persistence.
+7. Support multiple concurrent clients.
+8. Benchmark and optimize performance.
 
 ## Learning Objectives
 
-Through this project, I aim to understand:
+Vaderis is a hands-on project for learning:
 
-- TCP networking
+- Computer networks and TCP sockets
 - Client-server architecture
-- Serialization and deserialization
-- Parsing protocols
-- Hash tables
-- Memory management
-- Concurrency
-- Threading
-- Synchronization
-- Persistence
-- File I/O
-- Database architecture
-- Performance optimization
-- Benchmarking
-- System design
+- Protocol parsing and serialization
+- C++ programming and memory management
+- Hash tables and data structures
+- Database internals
+- Persistence and concurrency
 
-## Why Build Redis From Scratch?
+## Why Vaderis?
 
-Using a database teaches you how to use a database.
-
-Building one teaches you how a database works.
-
-This project is an attempt to move beyond APIs and abstractions and understand the engineering decisions behind an in-memory data store.
+Building a Redis-inspired database from scratch is an opportunity to explore the systems engineering behind fast in-memory data stores. Rather than simply using an existing database, Vaderis focuses on implementing its core concepts and understanding how the pieces work together.
 
 ## Current Progress
 
-| Component | Status |
+| Feature | Status |
 |---|---|
-| Project Setup | ✅ |
-| TCP Server | ✅ |
-| Client | ⬜ |
-| Protocol Parser | ✅ |
-| `PING` | ✅ |
-| `SET` | ✅ |
-| `GET` | ✅ |
-| `DEL` | ✅ |
-| Expiration | ⬜ |
-| Lists | ⬜ |
-| Sets | ⬜ |
-| Hashes | ⬜ |
-| Persistence | ⬜ |
-| Concurrency | ⬜ |
-| Pub/Sub | ⬜ |
-| Benchmarking | ⬜ |
+| Project setup | Completed |
+| TCP server | Completed |
+| Client connection handling | Completed |
+| RESP command parsing | Completed |
+| Command execution | Completed |
+| In-memory key-value store | Completed |
+| `PING`, `SET`, `GET`, `DEL` | Completed |
+| `EXISTS`, `KEYS` | Completed |
+| Dedicated TCP client | Planned |
+| Key expiration and TTL | Completed |
+| Lists, sets, and hashes | Planned |
+| Persistence | Planned |
+| Concurrent clients | Planned |
+| Pub/Sub | Planned |
+| Benchmarking | Planned |
 
 ## Disclaimer
 
-This project is an educational implementation inspired by Redis.
+Vaderis is an educational project inspired by Redis. It is independently developed and is not intended to be a production-ready replacement for Redis. It does not currently implement all Redis commands, features, or guarantees.
 
-It is not intended to be a drop-in replacement for production Redis.
+## License
 
-Redis is an independent project and remains the work of its respective contributors.
+This project is licensed under the [MIT License](LICENSE).
 
 ## Future Ideas
 
