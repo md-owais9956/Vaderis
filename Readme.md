@@ -40,8 +40,8 @@ Vaderis aims to implement a lightweight, Redis-inspired database from scratch. T
 - [x] `DEL`
 - [x] `EXISTS`
 - [x] `KEYS`
-- [ ] `EXPIRE`
-- [ ] `TTL`
+- [x] `EXPIRE`
+- [x] `TTL`
 
 ### Data Structures
 
@@ -156,7 +156,7 @@ Building a Redis-inspired database from scratch is an opportunity to explore the
 | `PING`, `SET`, `GET`, `DEL` | Completed |
 | `EXISTS`, `KEYS` | Completed |
 | Dedicated TCP client | Planned |
-| Key expiration and TTL | Planned |
+| Key expiration and TTL | Completed |
 | Lists, sets, and hashes | Planned |
 | Persistence | Planned |
 | Concurrent clients | Planned |
