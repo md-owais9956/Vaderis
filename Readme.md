@@ -28,7 +28,7 @@ Vaderis is a learning-oriented project focused on understanding how an in-memory
 - [x] Python-based RESP test client
 - [x] Automated command and expiration tests
 
-*Confirm that the latest `INCR`, `DECR`, `EXPIRE`, and `TTL` source code is committed to this branch before treating all items above as complete.*
+
 
 ### Planned
 
