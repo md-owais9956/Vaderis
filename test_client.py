@@ -241,6 +241,21 @@ def run_tests():
         command(client, "SET", "persistent", "updated", expected="OK")
         command(client, "TTL", "persistent", expected=-1)
 
+
+        command(client, "SET", "counter", "10", expected="OK")
+        command(client, "INCR", "counter", expected=11)
+        command(client, "DECR", "counter", expected=10)
+
+        command(client, "INCR", "new_counter", expected=1)
+        command(client, "DECR", "another_counter", expected=-1)
+
+        command(client, "SET", "bad_counter", "hello", expected="OK")
+        command(
+            client, "INCR", "bad_counter",
+            validator=lambda r: isinstance(r, str) and r.startswith("ERROR:")
+        )
+        command(client, "GET", "bad_counter", expected="hello")
+
         # Immediate expiration
         command(client, "SET", "instant", "value", expected="OK")
         command(client, "EXPIRE", "instant", "0", expected=1)
