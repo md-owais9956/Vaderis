@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <vector>
 
+
 namespace {
 
 volatile std::sig_atomic_t running = 1;
@@ -177,6 +178,53 @@ bool parseCommand(
 
     consumed = pos;
     return true;
+}
+
+std::string incrementCommand(
+    const std::vector<std::string>& args,
+    bool decrement
+) {
+    if (args.size() != 2) {
+        return errorReply(
+            decrement
+                ? "wrong number of arguments for DECR"
+                : "wrong number of arguments for INCR"
+        );
+    }
+
+    const std::string& key = args[1];
+
+    long long value = 0;
+
+    if (keyExists(key)) {
+        const std::string& stored = database.at(key);
+
+        try {
+            size_t parsed = 0;
+            value = std::stoll(stored, &parsed);
+
+            if (parsed != stored.size()) {
+                return errorReply("value is not an integer or out of range");
+            }
+        } catch (...) {
+            return errorReply("value is not an integer or out of range");
+        }
+    }
+
+    if (decrement) {
+    if (value == (std::numeric_limits<long long>::min)()) {
+        return errorReply("increment or decrement would overflow");
+    }
+    --value;
+} else {
+    if (value == (std::numeric_limits<long long>::max)()) {
+        return errorReply("increment or decrement would overflow");
+    }
+    ++value;
+}
+    database[key] = std::to_string(value);
+
+    return ":" + std::to_string(value) + "\r\n";
 }
 
 // Execute a parsed command.
@@ -372,6 +420,14 @@ std::string executeCommand(const std::vector<std::string>& args) {
             ).count();
 
         return ":" + std::to_string(remaining) + "\r\n";
+    }
+
+    if (command == "INCR") {
+        return incrementCommand(args, false);
+    }
+
+    if (command == "DECR") {
+        return incrementCommand(args, true);
     }
 
     return errorReply("unknown command '" + args[0] + "'");
