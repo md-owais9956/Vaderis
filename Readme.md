@@ -1,105 +1,196 @@
 # Vaderis
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+**A Redis-inspired, in-memory key-value database built from scratch in C++ using Winsock.**
 
-**Vaderis** is a Redis-inspired, in-memory key-value database built from scratch in C++ to explore database internals, TCP networking, protocol parsing, and data structures.
+Vaderis is a learning-oriented project focused on understanding how an in-memory database works internally—from TCP networking and the RESP protocol to command execution, key management, and expiration.
 
 > Vaderis is an independent educational project inspired by Redis. It is not affiliated with or endorsed by Redis.
 
-**Status:** Work in Progress
+---
 
-## Overview
+## Features
 
-Vaderis aims to implement a lightweight, Redis-inspired database from scratch. The project explores how an in-memory database works internally, including TCP networking, the Redis Serialization Protocol (RESP), command processing, data storage, and persistence.
+### Implemented
 
-## Goals
+- [x] TCP server using Winsock
+- [x] RESP array and bulk-string command parsing
+- [x] `PING` — test server connectivity
+- [x] `SET` — store a key-value pair
+- [x] `GET` — retrieve a value
+- [x] `DEL` — delete one or more keys
+- [x] `EXISTS` — check whether keys exist
+- [x] `KEYS *` — list existing keys
+- [x] `EXPIRE` — assign a time-to-live to a key
+- [x] `TTL` — retrieve the remaining lifetime of a key
+- [x] `INCR` — increment an integer value
+- [x] `DECR` — decrement an integer value
+- [x] Lazy expiration of expired keys
+- [x] Python-based RESP test client
+- [x] Automated command and expiration tests
 
-- Understand TCP networking and client-server communication.
-- Implement RESP protocol parsing and responses.
-- Build a command execution engine.
-- Implement an in-memory key-value store.
-- Explore data structures and persistence mechanisms.
-- Learn how databases handle concurrent clients and performance.
 
-## Features and Roadmap
 
-### Core
+### Planned
 
-- [x] TCP server
-- [x] Client connection handling
-- [x] Command parser
-- [x] Command execution engine
-- [x] In-memory key-value store
-- [ ] Dedicated TCP client
-
-### Supported Commands
-
-- [x] `PING`
-- [x] `SET`
-- [x] `GET`
-- [x] `DEL`
-- [x] `EXISTS`
-- [x] `KEYS`
-- [x] `EXPIRE`
-- [x] `TTL`
-
-### Data Structures
-
-- [ ] Lists
-- [ ] Sets
+- [ ] Dedicated reusable TCP client
+- [ ] `MSET` and `MGET` — multiple key-value operations
+- [ ] Lists and sets
 - [ ] Hashes
-- [ ] Sorted sets
+- [ ] Data persistence
+- [ ] Background expiration cleanup
+- [ ] Concurrent client handling
+- [ ] Improved error handling and protocol coverage
+- [ ] Performance benchmarks
 
-### Persistence
+---
 
-- [ ] Snapshot-based persistence
-- [ ] Append-only file (AOF)
+## Tech Stack
 
-### Advanced Features
+| Component | Technology |
+|---|---|
+| Language | C++17 |
+| Networking | Winsock2 |
+| Protocol | RESP-inspired command protocol |
+| Storage | `std::unordered_map` |
+| Testing | Python 3 and sockets |
+| Development | VS Code, Git, GitHub |
 
-- [ ] Multiple-client concurrency
-- [ ] Pub/Sub
-- [ ] Transactions
+---
 
-### Performance
+## Getting Started
 
-- [ ] Benchmarking
-- [ ] Performance optimization
+### Prerequisites
 
-## Architecture
+- Windows
+- MinGW-w64 with `g++`
+- Python 3
 
-Vaderis follows a client-server architecture:
+### 1. Clone the repository
 
-1. A client connects to the server over TCP.
-2. The server receives commands encoded using RESP.
-3. The command parser extracts the command and its arguments.
-4. The command execution engine processes the request.
-5. The in-memory database stores or retrieves the requested data.
-6. The server sends the response back to the client.
+```bash
+git clone https://github.com/md-owais9956/Vaderis.git
+cd Vaderis
+```
 
-## Example
+### 2. Compile the server
 
-Example commands supported by Vaderis:
+```bash
+g++ -std=c++17 -Wall -Wextra src/server/tcp_server.cpp -o vaderis-server.exe -lws2_32
+```
+
+### 3. Start the server
+
+```powershell
+.\vaderis-server.exe
+```
+
+The server listens on port `6379`.
+
+### 4. Run the test client
+
+Open another terminal in the project directory:
+
+```powershell
+py test_client.py
+```
+
+Keep the server running while the tests execute.
+
+---
+
+## Command Examples
+
+The examples below illustrate the intended command behavior.
+
+### Basic operations
 
 ```text
 PING
-+PONG
+PONG
 
-SET name Owais
-+OK
+SET language C++
+OK
 
-GET name
-$5
-Owais
+GET language
+C++
 
-EXISTS name
-:1
+EXISTS language
+1
 
-DEL name
-:1
+DEL language
+1
 ```
 
-These examples illustrate the expected results. Exact response formatting may vary depending on the client.
+### Numeric operations
+
+```text
+SET visits 10
+OK
+
+INCR visits
+11
+
+DECR visits
+10
+```
+
+`INCR` and `DECR` operate on integer values. Invalid integer values should return an error without changing the stored value.
+
+### Key expiration
+
+```text
+SET session active
+OK
+
+EXPIRE session 10
+1
+
+TTL session
+10
+```
+
+`EXPIRE` assigns a lifetime in seconds. `TTL` returns the remaining lifetime, `-1` when a key has no expiration, and `-2` when a key is missing or expired.
+
+### Lazy expiration
+
+Vaderis uses lazy expiration: when an expired key is accessed by a command that checks its existence, the server detects the expiration and removes the key.
+
+Background expiration cleanup is a planned improvement.
+
+---
+
+## Architecture
+
+```text
+Python Test Client
+        |
+        | TCP / RESP-style commands
+        v
+   Winsock TCP Server
+        |
+        v
+    RESP Parser
+        |
+        v
+  Command Dispatcher
+        |
+        +---- Key-Value Store
+        |
+        +---- Expiration Metadata
+        |
+        v
+   RESP Response
+```
+
+### Current limitations
+
+- Data is stored in memory and is lost when the server stops.
+- Client connections are handled sequentially.
+- `KEYS` currently supports `*` and exact-key lookup, not general glob patterns.
+- Expired keys are cleaned lazily rather than by a background worker.
+- The protocol implementation covers the commands implemented by Vaderis, not the entire Redis protocol.
+
+---
 
 ## Project Structure
 
@@ -109,79 +200,46 @@ Vaderis/
 │   └── server/
 │       └── tcp_server.cpp
 ├── test_client.py
-├── vaderis-server.exe
 ├── README.md
-└── LICENSE
+├── LICENSE
+└── .gitignore
 ```
 
-The executable name shown above is the intended name. Update your build configuration to generate `vaderis-server.exe` if your current executable is still named `redis-server.exe`.
+---
 
 ## Development Roadmap
 
-1. Build the TCP server.
-2. Implement RESP command parsing.
-3. Add basic Redis-inspired commands.
-4. Expand the supported data structures.
-5. Implement key expiration and TTL.
-6. Add persistence.
-7. Support multiple concurrent clients.
-8. Benchmark and optimize performance.
-
-## Learning Objectives
-
-Vaderis is a hands-on project for learning:
-
-- Computer networks and TCP sockets
-- Client-server architecture
-- Protocol parsing and serialization
-- C++ programming and memory management
-- Hash tables and data structures
-- Database internals
-- Persistence and concurrency
-
-## Why Vaderis?
-
-Building a Redis-inspired database from scratch is an opportunity to explore the systems engineering behind fast in-memory data stores. Rather than simply using an existing database, Vaderis focuses on implementing its core concepts and understanding how the pieces work together.
-
-## Current Progress
-
 | Feature | Status |
 |---|---|
-| Project setup | Completed |
-| TCP server | Completed |
-| Client connection handling | Completed |
-| RESP command parsing | Completed |
-| Command execution | Completed |
-| In-memory key-value store | Completed |
-| `PING`, `SET`, `GET`, `DEL` | Completed |
-| `EXISTS`, `KEYS` | Completed |
-| Dedicated TCP client | Planned |
-| Key expiration and TTL | Completed |
+| TCP server and RESP parsing | Completed |
+| Basic key-value commands | Completed |
+| `EXISTS` and `KEYS` | Completed |
+| `EXPIRE` and `TTL` | Implemented; verify current branch |
+| `INCR` and `DECR` | Implemented; verify current branch |
+| Python test client | Completed |
+| `MSET` and `MGET` | Planned |
 | Lists, sets, and hashes | Planned |
 | Persistence | Planned |
 | Concurrent clients | Planned |
-| Pub/Sub | Planned |
-| Benchmarking | Planned |
+| Background expiration cleanup | Planned |
 
-## Disclaimer
+---
 
-Vaderis is an educational project inspired by Redis. It is independently developed and is not intended to be a production-ready replacement for Redis. It does not currently implement all Redis commands, features, or guarantees.
+## Contributing
+
+Vaderis is a learning project, and contributions, feedback, bug reports, and suggestions are welcome.
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make and test your changes.
+4. Submit a pull request describing the implementation.
+
+---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-## Future Ideas
+---
 
-Some features I may explore after the core implementation:
-
-- Event-driven architecture
-- Non-blocking I/O
-- Memory-efficient data structures
-- Replication
-- Sharding
-- Leader-follower architecture
-- Distributed caching
-- Cluster communication
-- Fault tolerance
-- Monitoring and metrics
+**Built as a journey into database internals, networking, and systems programming.**
