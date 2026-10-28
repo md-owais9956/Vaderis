@@ -223,6 +223,34 @@ def run_tests():
         command(client, "EXISTS", "temporary", expected=0)
         command(client, "DEL", "temporary", expected=0)
 
+        # MSET and MGET
+        command(
+            client, "MSET",
+            "user", "Owais",
+            "language", "C++",
+            "project", "Vaderis",
+            expected="OK"
+        )
+
+        command(
+            client, "MGET", "user", "language", "project",
+            expected=["Owais", "C++", "Vaderis"]
+        )
+
+        command(
+            client, "MGET", "user", "missing",
+            expected=["Owais", None]
+        )
+
+        # Invalid MSET must not change the database.
+        command(
+            client, "MSET", "incomplete",
+            validator=lambda r: isinstance(r, str)
+            and r.startswith("ERROR:")
+        )
+
+        command(client, "GET", "user", expected="Owais")
+
         # -------------------------------
         # 5. Additional expiration tests
         # -------------------------------
@@ -263,6 +291,7 @@ def run_tests():
             client, "GET", "instant",
             validator=lambda r: r is None
         )
+
 
         # Invalid expiration value
         command(

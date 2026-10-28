@@ -430,6 +430,40 @@ std::string executeCommand(const std::vector<std::string>& args) {
         return incrementCommand(args, true);
     }
 
+    if (command == "MSET") {
+        if (args.size() < 3 || args.size() % 2 == 0) {
+            return errorReply("wrong number of arguments for MSET");
+        }
+
+        // Validate first, then apply all pairs.
+        // SET semantics: replacing a key clears its old expiration.
+        for (size_t i = 1; i < args.size(); i += 2) {
+            database[args[i]] = args[i + 1];
+            expirationTimes.erase(args[i]);
+        }
+
+        return "+OK\r\n";
+    }
+
+    if (command == "MGET") {
+        if (args.size() < 2) {
+            return errorReply("wrong number of arguments for MGET");
+        }
+
+        std::string response =
+            "*" + std::to_string(args.size() - 1) + "\r\n";
+
+        for (size_t i = 1; i < args.size(); ++i) {
+            if (keyExists(args[i])) {
+                response += bulkReply(database.at(args[i]));
+            } else {
+                response += "$-1\r\n";
+            }
+        }
+
+        return response;
+    }
+
     return errorReply("unknown command '" + args[0] + "'");
 }
 
