@@ -2,47 +2,31 @@
 
 **A Redis-inspired, in-memory key-value database built from scratch in C++ using Winsock.**
 
-Vaderis is a learning-oriented project focused on understanding how an in-memory database works internally—from TCP networking and the RESP protocol to command execution, key management, and expiration.
+Vaderis is an educational systems-programming project exploring how an in-memory database works internally, from TCP networking and RESP-style communication to command execution, key management, and expiration.
 
 > Vaderis is an independent educational project inspired by Redis. It is not affiliated with or endorsed by Redis.
-
----
 
 ## Features
 
 ### Implemented
 
-- [x] TCP server using Winsock
-- [x] RESP array and bulk-string command parsing
+- [x] TCP server using Winsock2
+- [x] RESP-style command parsing and responses
 - [x] `PING` — test server connectivity
 - [x] `SET` — store a key-value pair
 - [x] `GET` — retrieve a value
 - [x] `DEL` — delete one or more keys
 - [x] `EXISTS` — check whether keys exist
-- [x] `KEYS *` — list existing keys
-- [x] `EXPIRE` — assign a time-to-live to a key
+- [x] `KEYS` — retrieve keys using `*` or exact-key lookup
+- [x] `EXPIRE` — assign an expiration time to a key
 - [x] `TTL` — retrieve the remaining lifetime of a key
+- [x] Lazy expiration of expired keys
 - [x] `INCR` — increment an integer value
 - [x] `DECR` — decrement an integer value
-- [x] Lazy expiration of expired keys
-- [x] Python-based RESP test client
+- [x] `MSET` — store multiple key-value pairs
+- [x] `MGET` — retrieve multiple values
+- [x] Python-based test client
 - [x] Automated command and expiration tests
-
-
-
-### Planned
-
-- [ ] Dedicated reusable TCP client
-- [ ] `MSET` and `MGET` — multiple key-value operations
-- [ ] Lists and sets
-- [ ] Hashes
-- [ ] Data persistence
-- [ ] Background expiration cleanup
-- [ ] Concurrent client handling
-- [ ] Improved error handling and protocol coverage
-- [ ] Performance benchmarks
-
----
 
 ## Tech Stack
 
@@ -50,12 +34,10 @@ Vaderis is a learning-oriented project focused on understanding how an in-memory
 |---|---|
 | Language | C++17 |
 | Networking | Winsock2 |
-| Protocol | RESP-inspired command protocol |
-| Storage | `std::unordered_map` |
-| Testing | Python 3 and sockets |
-| Development | VS Code, Git, GitHub |
-
----
+| Protocol | RESP-style protocol |
+| In-memory storage | `std::unordered_map` |
+| Test client | Python 3 |
+| Development | VS Code, MinGW-w64, Git, GitHub |
 
 ## Getting Started
 
@@ -74,7 +56,7 @@ cd Vaderis
 
 ### 2. Compile the server
 
-```bash
+```powershell
 g++ -std=c++17 -Wall -Wextra src/server/tcp_server.cpp -o vaderis-server.exe -lws2_32
 ```
 
@@ -96,13 +78,9 @@ py test_client.py
 
 Keep the server running while the tests execute.
 
----
+## Supported Commands
 
-## Command Examples
-
-The examples below illustrate the intended command behavior.
-
-### Basic operations
+### Basic key-value operations
 
 ```text
 PING
@@ -121,20 +99,38 @@ DEL language
 1
 ```
 
+### Multiple key-value operations
+
+`MSET` stores multiple key-value pairs in one command:
+
+```text
+MSET name Owais language C++ project Vaderis
+OK
+```
+
+`MGET` retrieves multiple values in the same order as the requested keys:
+
+```text
+MGET name language project missing
+["Owais", "C++", "Vaderis", (nil)]
+```
+
+Missing keys are represented by null bulk-string responses.
+
 ### Numeric operations
 
 ```text
-SET visits 10
+SET counter 10
 OK
 
-INCR visits
+INCR counter
 11
 
-DECR visits
+DECR counter
 10
 ```
 
-`INCR` and `DECR` operate on integer values. Invalid integer values should return an error without changing the stored value.
+`INCR` and `DECR` support integer values and return errors for invalid numeric values or overflow.
 
 ### Key expiration
 
@@ -149,48 +145,45 @@ TTL session
 10
 ```
 
-`EXPIRE` assigns a lifetime in seconds. `TTL` returns the remaining lifetime, `-1` when a key has no expiration, and `-2` when a key is missing or expired.
+`TTL` returns:
+
+- A non-negative integer when the key has an expiration.
+- `-1` when the key exists without an expiration.
+- `-2` when the key is missing or expired.
 
 ### Lazy expiration
 
-Vaderis uses lazy expiration: when an expired key is accessed by a command that checks its existence, the server detects the expiration and removes the key.
+Vaderis uses lazy expiration. When a command checks an expired key, the server detects its expiration and removes it.
 
-Background expiration cleanup is a planned improvement.
-
----
+A background expiration worker has not yet been implemented.
 
 ## Architecture
 
 ```text
-Python Test Client
-        |
-        | TCP / RESP-style commands
-        v
-   Winsock TCP Server
-        |
-        v
-    RESP Parser
-        |
-        v
-  Command Dispatcher
-        |
-        +---- Key-Value Store
-        |
-        +---- Expiration Metadata
-        |
-        v
-   RESP Response
+          Python Test Client
+                  |
+                  | TCP connection
+                  | RESP-style commands
+                  v
+            Winsock Server
+                  |
+                  v
+             RESP Parser
+                  |
+                  v
+          Command Dispatcher
+                  |
+           +------+------+
+           |             |
+           v             v
+       Key-Value     Expiration
+         Store       Metadata
+           |             |
+           +------+------+
+                  |
+                  v
+           RESP Response
 ```
-
-### Current limitations
-
-- Data is stored in memory and is lost when the server stops.
-- Client connections are handled sequentially.
-- `KEYS` currently supports `*` and exact-key lookup, not general glob patterns.
-- Expired keys are cleaned lazily rather than by a background worker.
-- The protocol implementation covers the commands implemented by Vaderis, not the entire Redis protocol.
-
----
 
 ## Project Structure
 
@@ -205,41 +198,66 @@ Vaderis/
 └── .gitignore
 ```
 
----
+## Current Limitations
 
-## Development Roadmap
+- Data is stored in memory and is lost when the server stops.
+- Client connections are handled sequentially.
+- `KEYS` supports `*` and exact-key lookup, not general glob patterns.
+- Expiration cleanup is lazy; there is no background expiration worker.
+- The implementation supports its own command subset rather than the complete Redis protocol.
+- Persistence and crash recovery are not implemented.
+
+## Roadmap
 
 | Feature | Status |
 |---|---|
-| TCP server and RESP parsing | Completed |
+| TCP server and RESP-style parsing | Completed |
 | Basic key-value commands | Completed |
 | `EXISTS` and `KEYS` | Completed |
-| `EXPIRE` and `TTL` | Implemented; verify current branch |
-| `INCR` and `DECR` | Implemented; verify current branch |
+| `EXPIRE` and `TTL` | Completed |
+| `INCR` and `DECR` | Completed |
+| `MSET` and `MGET` | Completed |
 | Python test client | Completed |
-| `MSET` and `MGET` | Planned |
+| `APPEND`, `STRLEN`, `GETSET` | Planned |
 | Lists, sets, and hashes | Planned |
-| Persistence | Planned |
-| Concurrent clients | Planned |
+| Dedicated reusable TCP client | Planned |
+| Data persistence | Planned |
+| Concurrent client handling | Planned |
 | Background expiration cleanup | Planned |
+| Performance benchmarks | Planned |
 
----
+## Testing
+
+The Python client tests:
+
+- Basic command behavior
+- Missing keys and invalid commands
+- Key existence and enumeration
+- Expiration and TTL behavior
+- Numeric operations and invalid integers
+- Multi-key operations and missing values
+
+Run the test suite using:
+
+```powershell
+py test_client.py
+```
+
+The test client reports individual results and displays a final success message when all assertions pass.
 
 ## Contributing
 
-Vaderis is a learning project, and contributions, feedback, bug reports, and suggestions are welcome.
+Vaderis is a learning project, and feedback, bug reports, and contributions are welcome.
 
 1. Fork the repository.
 2. Create a feature branch.
-3. Make and test your changes.
-4. Submit a pull request describing the implementation.
-
----
+3. Implement and test your changes.
+4. Submit a pull request describing the changes.
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+Licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built as a journey into database internals, networking, and systems programming.**
+**Built to explore database internals, networking, and systems programming one feature at a time.**
